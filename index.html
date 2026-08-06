@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perpustakaan Digital</title>
+<style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+  body { background: #f4f6f9; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #2c3e50; }
+  
+  .form-container, .book-container { 
+    background: white; padding: 20px; border-radius: 12px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; 
+  }
+  
+  input, textarea, button { 
+    width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; 
+    border-radius: 8px; font-size: 14px;
+  }
+  
+  button { 
+    background: #3498db; color: white; border: none; cursor: pointer; 
+    font-weight: bold; transition: 0.3s;
+  }
+  button:hover { background: #2980b9; }
+  
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  
+  .book-card { 
+    background: white; border-radius: 12px; overflow: hidden; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; padding-bottom: 10px;
+    transition: transform 0.2s;
+  }
+  .book-card:hover { transform: translateY(-5px); }
+  
+  .book-card img { width: 100%; height: 280px; object-fit: cover; }
+  .book-card h3 { margin: 10px 0 5px; font-size: 16px; color: #333; }
+  .book-card p { margin: 5px; font-size: 13px; color: #666; }
+  
+  .stars { color: #f1c40f; font-size: 18px; }
+  .delete-btn { background: #e74c3c; width: 90%; margin: 10px auto; }
+  .delete-btn:hover { background: #c0392b; }
+</style>
+</head>
+<body>
+
+<h1>📚 Perpustakaan Digital</h1>
+
+<div class="form-container">
+  <h2>Tambah Buku Baru</h2>
+  <input type="text" id="judul" placeholder="Judul Buku" required>
+  <input type="text" id="pengarang" placeholder="Nama Pengarang" required>
+  <input type="text" id="foto" placeholder="Link URL Foto Cover Buku" required>
+  <input type="number" id="rating" placeholder="Rating 0-5" min="0" max="5" step="0.1" required>
+  <textarea id="deskripsi" placeholder="Deskripsi Singkat"></textarea>
+  <button onclick="tambahBuku()">Simpan Buku</button>
+</div>
+
+<div class="book-container">
+  <h2>Daftar Buku <span id="totalBuku"></span></h2>
+  <div class="book-grid" id="daftarBuku"></div>
+</div>
+
+<script>
+let buku = JSON.parse(localStorage.getItem('bukuPerpus')) || [];
+
+function tampilkanBuku() {
+  const container = document.getElementById('daftarBuku');
+  container.innerHTML = '';
+  document.getElementById('totalBuku').innerText = `(${buku.length})`;
+
+  // urutkan berdasarkan rating tertinggi
+  buku.sort((a,b) => b.rating - a.rating);
+
+  buku.forEach((b, index) => {
+    const stars = '⭐'.repeat(Math.floor(b.rating)) + '☆'.repeat(5 - Math.floor(b.rating));
+    container.innerHTML += `
+      <div class="book-card">
+        <img src="${b.foto}" alt="${b.judul}" onerror="this.src='https://via.placeholder.com/200x280?text=Tidak+Ada+Gambar'">
+        <h3>${b.judul}</h3>
+        <p>Pengarang: ${b.pengarang}</p>
+        <p class="stars">${stars} (${b.rating})</p>
+        <p>${b.deskripsi}</p>
+        <button class="delete-btn" onclick="hapusBuku(${index})">Hapus</button>
+      </div>
+    `;
+  });
+}
+
+function tambahBuku() {
+  const judul = document.getElementById('judul').value;
+  const pengarang = document.getElementById('pengarang').value;
+  const foto = document.getElementById('foto').value;
+  const rating = parseFloat(document.getElementById('rating').value);
+  const deskripsi = document.getElementById('deskripsi').value;
+
+  if(judul && pengarang && foto && !isNaN(rating)){
+    buku.push({judul, pengarang, foto, rating, deskripsi});
+    localStorage.setItem('bukuPerpus', JSON.stringify(buku));
+    tampilkanBuku();
+    document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+  } else {
+    alert('Mohon isi semua data dengan benar!');
+  }
+}
+
+function hapusBuku(index){
+  if(confirm('Yakin mau hapus buku ini?')){
+    buku.splice(index, 1);
+    localStorage.setItem('bukuPerpus', JSON.stringify(buku));
+    tampilkanBuku();
+  }
+}
+
+// tampilkan pertama kali
+tampilkanBuku();
+</script>
+
+</body>
+                        </html>
